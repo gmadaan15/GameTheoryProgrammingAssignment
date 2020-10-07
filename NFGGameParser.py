@@ -21,7 +21,7 @@ class InvalidFileException(Exception):
 
 class NfgGameParser(object):
     # various error messages used by the InvalidFileException
-    EXTREME_VERSIONS_MESSAGE = "\nInvalid Format, We have included examples of our test formats of input .nfg file inside TestsNfg, kindly take a look at it and " \
+    EXTREME_VERSIONS_MESSAGE = "\nInvalid Format, We have included examples of our test formats of input .nfg file inside NfgTestCases folder, kindly take a look at it and " \
                                "do the corrections that are required "
 
     WRONG_NUMBER_OF_STRATEGIES = "\nnumber of strategies passed seems to be wrong with respect to number of players, kindly correct it."

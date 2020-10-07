@@ -61,11 +61,12 @@ class NfgGameParser(object):
 
         # read the lines of the file
         with open(filename, 'r') as infile:
-            lines = ''.join(infile.readlines()).replace('\n', ' ')
+            lines = ' '.join(infile.readlines())         # regex will takecare of the newline character
 
         # regex matching
         # old regex , 'NFG *1 *R *"(.*?)" *{(.*?)} *{(.*?)}(?: *"(.*?)")? *(.+)'
-        match_obj = re.match('NFG +1 +R +"(.*?)" +{(.*?)} +{(.*?)}(?: +"(.*?)")? +(.+)', lines)
+        # NOTE: '\s' will match wide range of whitespace characters, instead of just 'space' character
+        match_obj = re.match('NFG\s+1\s+R\s+"(.*?)"\s+{(.*?)}\s+{(.*?)}(?:\s+"(.*?)")?\s+(.+)', lines)
 
         # try to extract the values
         try:
@@ -111,6 +112,7 @@ class NfgGameParser(object):
             for j in range (i,i+no_of_players,1):
                 try:
                     #print(payoff_values_str[j])
+                    # NOTE: consider using float/int instead of eval
                     evaluated = eval(payoff_values_str[j])
                     #print(evaluated)
                 except Exception:

@@ -1,0 +1,3 @@
+NFG 1 R "Test Case 2 : payoff values with any kind"
+{ "Player 1" "Player 2" } { 3 2 }
+ 0 1 1 -2 0 3/2 2 2.5 0 (1+0.4) 0.0 0

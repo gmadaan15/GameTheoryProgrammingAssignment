@@ -113,7 +113,7 @@ class NfgGameParser(object):
                 try:
                     #print(payoff_values_str[j])
                     # NOTE: consider using float/int instead of eval
-                    evaluated = eval(payoff_values_str[j])
+                    evaluated = float(payoff_values_str[j])
                     #print(evaluated)
                 except Exception:
                     raise InvalidFileException (cls.WRONG_PAYOFF_VALUES_FORMAT)

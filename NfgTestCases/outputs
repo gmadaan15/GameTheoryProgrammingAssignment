@@ -1,0 +1,100 @@
+test_case_1 : 
+{'game_name': 'Test Case 1 : base case', 'players': ('Player 1', 'Player 2'), 'game_comment': None, 'no_of_strategies': (3, 2), 'pay_off_values': array([[[0, 1],
+        [1, 2]],
+
+       [[0, 3],
+        [2, 2]],
+
+       [[0, 1],
+        [0, 0]]])}
+test_case_2 : 
+{'game_name': 'Test Case 2 : payoff values with any kind', 'players': ('Player 1', 'Player 2'), 'game_comment': None, 'no_of_strategies': (3, 2), 'pay_off_values': array([[[ 0. ,  1. ],
+        [ 1. , -2. ]],
+
+       [[ 0. ,  1.5],
+        [ 2. ,  2.5]],
+
+       [[ 0. ,  1.4],
+        [ 0. ,  0. ]]])}
+test_case_3 : 
+{'game_name': 'Test Case 3 : three player game', 'players': ('Player 1', 'Player 2', 'Player 3'), 'game_comment': None, 'no_of_strategies': (3, 2, 4), 'pay_off_values': array([[[[0, 0, 0],
+         [0, 0, 1],
+         [0, 0, 2],
+         [0, 0, 3]],
+
+        [[0, 1, 0],
+         [0, 1, 1],
+         [0, 1, 2],
+         [0, 1, 3]]],
+
+
+       [[[1, 0, 0],
+         [1, 0, 1],
+         [1, 0, 2],
+         [1, 0, 3]],
+
+        [[1, 1, 0],
+         [1, 1, 1],
+         [1, 1, 2],
+         [1, 1, 3]]],
+
+
+       [[[2, 0, 0],
+         [2, 0, 1],
+         [2, 0, 2],
+         [2, 0, 3]],
+
+        [[2, 1, 0],
+         [2, 1, 1],
+         [2, 1, 2],
+         [2, 1, 3]]]])}
+test_case_4 : 
+InvalidFileException: 
+Invalid Format, We have included examples of our test formats of input .nfg file inside TestsNfg, kindly take a look at it and do the corrections that are required  
+test_case_5 : 
+InvalidFileException: 
+number of strategies passed seems to be wrong with respect to number of players, kindly correct it. 
+test_case_6 : 
+InvalidFileException: 
+number of strategies passed seems to be wrong with respect to number of players, kindly correct it. 
+test_case_7 : 
+InvalidFileException: 
+no of pay off values passed seems to be wrong with respect to number of players, kindly correct it. 
+test_case_8 : 
+InvalidFileException: 
+no of pay off values passed seems to be wrong with respect to number of players, kindly correct it. 
+test_case_9 : 
+InvalidFileException: 
+payoff values format doesn't seem to be right, kindly check 
+test_case_10 : 
+InvalidFileException: 
+Invalid Format, We have included examples of our test formats of input .nfg file inside TestsNfg, kindly take a look at it and do the corrections that are required  
+test_case_11 : 
+{'game_name': 'Test Case 3 : three player game', 'players': ('Player 1', 'Player 2', 'Player 3', 'player 4'), 'game_comment': None, 'no_of_strategies': (2, 2, 2, 2), 'pay_off_values': array([[[[[0, 0, 0, 0],
+          [0, 0, 0, 1]],
+
+         [[0, 0, 1, 0],
+          [0, 0, 1, 1]]],
+
+
+        [[[0, 1, 0, 0],
+          [0, 1, 0, 1]],
+
+         [[0, 1, 1, 0],
+          [0, 1, 1, 1]]]],
+
+
+
+       [[[[1, 0, 0, 0],
+          [1, 0, 0, 1]],
+
+         [[1, 0, 1, 0],
+          [1, 0, 1, 1]]],
+
+
+        [[[1, 1, 0, 0],
+          [1, 1, 0, 1]],
+
+         [[1, 1, 1, 0],
+          [1, 1, 1, 1]]]]])}
+

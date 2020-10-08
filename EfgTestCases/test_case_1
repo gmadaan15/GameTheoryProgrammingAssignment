@@ -1,4 +1,4 @@
-EFG 2 R "GAME NAME" { "K" "P" } ""
+EFG 2 R "GAME NAME: testcase -1" { "K" "P" } ""
 p "K" 1 1 "" { "In" "Out" } 0
 p "P" 2 1 "" { "A" "F" } 0
 t "" 1 "" { 10, 10 }

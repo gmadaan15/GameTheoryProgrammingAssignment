@@ -2,6 +2,7 @@ import re
 from NFGGameParser import InvalidFileException
 from itertools import product
 
+# personal node class and attributes
 class Personal_node(object):
     node_name = ""
     owner_player = -64
@@ -13,6 +14,7 @@ class Personal_node(object):
     payoffs = tuple()
     children = ()
 
+    # constructor
     def __init__(self,node_name, owner_player, info_num, info_name, action_names, outcome, outcome_name, payoffs):
         self.node_name=node_name
         self.owner_player = owner_player
@@ -24,17 +26,27 @@ class Personal_node(object):
         self.payoffs = payoffs
 
     # provate function, should not be called from outside
+    # this should be called while parsing and not while using
     def __add_children__ (self, children ):
         self.children = children
 
+    # to print the full info with children
     def __str__(self):
+        children_print = "( "
+        for child in self.children:
+            if (isinstance(child[1], Personal_node)):
+                children_print += "( " +child[0] + " - " + str(child[1].owner_player) + " - " + str(child[1].info_num) + " ), "
+            else:
+                children_print += "( " + child[0] + " - " + str(child[1].node_name) + " - " + str(
+                    child[1].payoffs) + " ), "
+        children_print += " )"
         out = "PERSONAL_NODE( node_name : {}, owner_player : {}, info_num : {}, info_name : {}, action_names : {}, outcome : {}, outcome_name : {}," \
-              " payoffs : {} )".format(
-            self.node_name, self.owner_player, self.info_num, self.info_name, self.action_names, self.outcome, self.outcome_name, self.payoffs
+              " payoffs : {}, children : {} )".format(
+            self.node_name, self.owner_player, self.info_num, self.info_name, self.action_names, self.outcome, self.outcome_name, self.payoffs, children_print
         )
         return out
 
-
+# Terminal node class and attributes
 class Terminal_node(object):
     node_name=""
     outcome=-64
@@ -52,6 +64,7 @@ class Terminal_node(object):
                                                                                                       self.outcome_name, self.payoffs)
         return out
 
+# even though not used, still class is declared
 class Chance_node(object):
     node_name=""
     info_num=-64
@@ -68,18 +81,30 @@ class Chance_node(object):
         self.outcome = outcome
         self.payoffs = payoffs
 
+# Player class and attributes
 class Player(object):
-    personal_nodes = tuple()
+    # information sets is a list of sets and personal_nodes is the unique node out of every info_set
+    info_sets = tuple()
     name = ""
     strategy_sequences = tuple()
+    personal_nodes = ()
 
-    def __init__(self, name, personal_nodes):
-        self.personal_nodes = personal_nodes
+
+    def __init__(self, name, info_sets):
+        self.info_sets = info_sets
         self.name = name
 
+        # lets get every unique info_set, so that the analysis is little bit simplified
+        personal_nodes = []
+        for set in info_sets:
+            personal_nodes.append(set[0])
+
+        self.personal_nodes = tuple(personal_nodes)
 
 
     # private function
+    # not to be called while using, should only be used while parsing
+    # creates a strategy sequence for every player
     def __build_strategy_sequence__(self):
         if len(self.personal_nodes) > 0:
             cartesian_product_actions = list(self.personal_nodes[0].children)
@@ -87,7 +112,7 @@ class Player(object):
                 cartesian_product_actions = list(product(cartesian_product_actions, self.personal_nodes[idx].children))
 
             self.strategy_sequences = tuple(cartesian_product_actions)
-        print("Strategy_sequence : " , self.strategy_sequences)
+        #print("Strategy_sequence : " , self.strategy_sequences)
 
     def __str__(self):
         personal_nodes_print = "\n( \n"
@@ -97,6 +122,7 @@ class Player(object):
         out = "PLAYER( name : {}, \n personal_nodes : {} )".format( self.name, personal_nodes_print )
         return out
 
+# Efg game class and attributes
 class EfgGame(object):
     game_name = ""
     game_comment = ""
@@ -110,12 +136,14 @@ class EfgGame(object):
         self.game_comment = game_comment
         self.prefix_traversal = prefix_traversal
 
+        # lets connect all the nodes, once these things are ready
         self.build_tree( 0 )
         root = prefix_traversal[0]
         for player in self.players:
             player.__build_strategy_sequence__()
 
     # can only be called from inside, a private function
+    # given the prefix list, build the tree that is assign the children to their respective nodes
     def build_tree(self, index):
         node = self.prefix_traversal[index]
         if isinstance( node, Terminal_node ) :
@@ -149,6 +177,7 @@ class EfgGame(object):
                                                                                                                 players_print, prefix_traversal_print )
         return out
 
+# Efg game parser class, takes in a file name and create an EfgGame object
 class EfgGameParser(object):
     # various error messages used by the InvalidFileException
     EXTREME_VERSIONS_MESSAGE = "\nInvalid Format, We have included examples of our test formats of input .efg file inside EfgTestCases folder, kindly take a look at it and " \
@@ -167,6 +196,7 @@ class EfgGameParser(object):
         file_lines= file_variable.readlines()
         #print(file_lines)
 
+        # lets match for the first line
         match_obj = re.match('EFG +2 +R +"(.*?)" +{(.*?)}(?: +"(.*?)")?', file_lines[0].rstrip("\n"))
 
         if match_obj is None:
@@ -175,10 +205,11 @@ class EfgGameParser(object):
         game_name, players_str, game_comment = match_obj.groups()
         players_str = [player for player in re.findall('"(.+?)"', players_str.strip())]
 
-        players_node_list = []
+        # need to find all info sets for all players
+        players_info_sets = []
         for player_name in players_str:
             #players.append( Player( tuple(), player_name) )
-            players_node_list.append([])
+            players_info_sets.append([])
 
         # will pass through all the nodes and categorise them.
         for index in range( 1, len(file_lines) ):
@@ -197,22 +228,50 @@ class EfgGameParser(object):
             '''
 
             try:
+                # lets match the regex
                 match_obj = re.match('p\s+"(.*?)"\s+(\d+?)\s+(\d+?)(?: +"(.*?)")?(?: +{(.*?)})? +(\d+?)(?: +"(.*?)")?(?: +{(.*?)})?', line)
                 if match_obj is not None:
+                    # get all the attributes documented
                     node_name, owner_player, info_num, info_name, action_names, outcome, outcome_name, payoffs = match_obj.groups()
                     owner_player, info_num, outcome = int(owner_player), int(info_num), int(outcome)
                     action_names = [action_name for action_name in re.findall('"(.+?)"', action_names.strip())]
                     action_names = tuple(action_names)
 
+                    # if payoffs is not given, would not be considered in the analysis
                     if payoffs is not None:
                         payoffs = tuple(map(float, payoffs.replace(',', ' ').split()))
                     else:
                         payoffs = tuple()
-                    personal_node = Personal_node(node_name, owner_player, info_num, info_name, action_names, outcome, outcome_name, payoffs)
+
+                    # checking for same info set coming again
+                    same_info_num = False
+                    same_info_idx = -16
+
+                    # create an object personal node
+                    personal_node = Personal_node(node_name, owner_player, info_num, info_name, action_names, outcome,
+                                                  outcome_name, payoffs)
+
+                    # check if its a repeated info set, and note the idx of the already existing info set
+                    for idx in range(len(players_info_sets[owner_player-1])):
+                        node = players_info_sets[owner_player-1][idx][0]
+                        if node.info_num == info_num:
+                            same_info_num = True
+                            same_info_idx = idx
+                            break
+
+                    # this may be the same info, but in a tree its a different node all together,
+                    # hence a new node has to be created and appended in the prefix_traversal
                     prefix_traversal.append( personal_node )
-                    players_node_list[owner_player-1].append(personal_node)
+
+                    # if its a new info set personal node, add a new set to the list
+                    if same_info_num == False:
+                        players_info_sets[owner_player-1].append([personal_node])
+                    # else keep it together with the already existing info set
+                    else:
+                        players_info_sets[owner_player - 1][same_info_idx].append(personal_node)
                     continue
 
+                # matching for terminal node, collect all info and append into prefix traversal
                 match_obj = re.match(
                     't +"(.*?)" +(\d+?)(?: +"(.*?)")? +{(.*?)}', line)
                 if match_obj is not None:
@@ -223,7 +282,7 @@ class EfgGameParser(object):
                     #print(type(terminal_node))
                     prefix_traversal.append(terminal_node)
                     continue
-
+            # find any exception, the format of the node may be wrong
             except Exception as e :
                 print(e)
                 raise InvalidFileException(cls.INVALID_NODE_MESSAGE)
@@ -231,13 +290,13 @@ class EfgGameParser(object):
             # reached till point, than definitly some invalid point detected
             raise InvalidFileException(cls.INVALID_NODE_MESSAGE)
 
+        # collect all players data to make a list of players
         for idx in range(len(players_str)):
-            players.append( Player( players_str[idx] , tuple( players_node_list[idx] ) ))
+            players.append( Player( players_str[idx] , tuple( players_info_sets[idx] ) ))
 
         #print( game_name, game_comment, players, prefix_traversal )
+        # create an object of Efg game
         efg_game = EfgGame(game_name, game_comment, tuple(players), tuple(prefix_traversal))
-
-        #print(str(efg_game))
 
         return efg_game
 

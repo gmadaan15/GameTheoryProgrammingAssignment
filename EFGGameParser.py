@@ -1,4 +1,5 @@
 import re
+import pprint
 from NFGGameParser import InvalidFileException
 from itertools import product
 
@@ -27,12 +28,13 @@ class Personal_node(object):
     def __add_children__ (self, children ):
         self.children = children
 
+    def __repr__(self):
+        return self.__str__()
+
     def __str__(self):
-        out = "PERSONAL_NODE( node_name : {}, owner_player : {}, info_num : {}, info_name : {}, action_names : {}, outcome : {}, outcome_name : {}," \
-              " payoffs : {} )".format(
+        return "PERSONAL_NODE(name: '{}', owner: {}, info_set: ({}, '{}'), actions: {}, outcome: ({}, '{}'), payoffs: {} )".format(
             self.node_name, self.owner_player, self.info_num, self.info_name, self.action_names, self.outcome, self.outcome_name, self.payoffs
         )
-        return out
 
 
 class Terminal_node(object):
@@ -47,10 +49,13 @@ class Terminal_node(object):
         self.outcome_name = outcome_name
         self.payoffs = payoffs
 
+    def __repr__(self):
+        return self.__str__()
+
     def __str__(self):
-        out = "TERMINAL_NODE( node_name : {}, outcome: {}, outcome_name : {} , payoffs : {} )".format(self.node_name, self.outcome,
-                                                                                                      self.outcome_name, self.payoffs)
-        return out
+        return "TERMINAL_NODE(name: '{}', outcome: ({}, '{}'), payoffs: {} )".format(
+            self.node_name, self.outcome, self.outcome_name, self.payoffs
+        )
 
 class Chance_node(object):
     node_name=""
@@ -87,15 +92,16 @@ class Player(object):
                 cartesian_product_actions = list(product(cartesian_product_actions, self.personal_nodes[idx].children))
 
             self.strategy_sequences = tuple(cartesian_product_actions)
-        print("Strategy_sequence : " , self.strategy_sequences)
+        print("Strategy_sequence:")
+        pprint.pprint(self.strategy_sequences)
+        print()
+
+    def __repr__(self):
+        return self.__str__()
 
     def __str__(self):
-        personal_nodes_print = "\n( \n"
-        for node in self.personal_nodes:
-            personal_nodes_print = personal_nodes_print + str(node) + " ,\n"
-        personal_nodes_print = personal_nodes_print + " )\n"
-        out = "PLAYER( name : {}, \n personal_nodes : {} )".format( self.name, personal_nodes_print )
-        return out
+        personal_nodes = '\n  '.join(str(node) for node in self.personal_nodes)
+        return "PLAYER( '{}', (\n  {}\n )\n)".format( self.name, personal_nodes )
 
 class EfgGame(object):
     game_name = ""
@@ -133,21 +139,15 @@ class EfgGame(object):
         #print("For node {}{}, children are {}".format(node.node_name,node.info_num, children))
         return last_index
 
+    def __repr__(self):
+        return self.__str__()
 
     def __str__(self):
-        players_print = "\n( \n"
-        for player in self.players:
-            players_print = players_print +  str(player) + " ,\n"
-        players_print += " )\n"
-
-        prefix_traversal_print = "\n( \n"
-        for node in self.prefix_traversal:
-            prefix_traversal_print += str(node) + " ,\n"
-        prefix_traversal_print += " )\n"
-
-        out = "EXTENSIVE FORM GAME( game_name : {}, game_comment : {}, \n players : {}, \n prefix_traversal : {} )".format( self.game_name, self.game_comment,
-                                                                                                                players_print, prefix_traversal_print )
-        return out
+        players = '\n'.join(str(player) for player in self.players)
+        prefix_traversal = '\n  '.join(str(node) for node in self.prefix_traversal)
+        return "EXTENSIVE FORM GAME( '{}', '{}' )\n{}\nPrefix Traversal:\n  {}".format(
+            self.game_name, self.game_comment, players, prefix_traversal
+        )
 
 class EfgGameParser(object):
     # various error messages used by the InvalidFileException
@@ -167,7 +167,7 @@ class EfgGameParser(object):
         file_lines= file_variable.readlines()
         #print(file_lines)
 
-        match_obj = re.match('EFG +2 +R +"(.*?)" +{(.*?)}(?: +"(.*?)")?', file_lines[0].rstrip("\n"))
+        match_obj = re.match('EFG\s+2\s+R\s+"(.*?)"\s+{(.*?)}(?:\s+"(.*?)")?', ' '.join(file_lines))
 
         if match_obj is None:
             raise InvalidFileException( cls.EXTREME_VERSIONS_MESSAGE )
@@ -197,7 +197,7 @@ class EfgGameParser(object):
             '''
 
             try:
-                match_obj = re.match('p\s+"(.*?)"\s+(\d+?)\s+(\d+?)(?: +"(.*?)")?(?: +{(.*?)})? +(\d+?)(?: +"(.*?)")?(?: +{(.*?)})?', line)
+                match_obj = re.match('p\s+"(.*?)"\s+(\d+?)\s+(\d+?)(?:\s+"(.*?)")?(?:\s+{(.*?)})?\s+(\d+?)(?:\s+"(.*?)")?(?:\s+{(.*?)})?', line)
                 if match_obj is not None:
                     node_name, owner_player, info_num, info_name, action_names, outcome, outcome_name, payoffs = match_obj.groups()
                     owner_player, info_num, outcome = int(owner_player), int(info_num), int(outcome)
@@ -213,8 +213,7 @@ class EfgGameParser(object):
                     players_node_list[owner_player-1].append(personal_node)
                     continue
 
-                match_obj = re.match(
-                    't +"(.*?)" +(\d+?)(?: +"(.*?)")? +{(.*?)}', line)
+                match_obj = re.match('t\s+"(.*?)"\s+(\d+?)(?:\s+"(.*?)")?\s+{(.*?)}', line)
                 if match_obj is not None:
                     node_name, outcome, outcome_name, payoffs = match_obj.groups()
                     outcome = int(outcome)

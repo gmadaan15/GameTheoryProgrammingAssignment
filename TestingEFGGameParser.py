@@ -6,7 +6,7 @@ for count in range(1,3):
 
     try:
         game = EfgGameParser.parse_efg_file(file_name)
-        print(game)
+        #print(game)
     except InvalidFileException as e:
         print(e)
     #except Exception as e:

@@ -11,7 +11,7 @@ class Personal_node(object):
     outcome= -64
     outcome_name= ""
     payoffs = tuple()
-    children = {}
+    children = ()
 
     def __init__(self,node_name, owner_player, info_num, info_name, action_names, outcome, outcome_name, payoffs):
         self.node_name=node_name
@@ -23,7 +23,8 @@ class Personal_node(object):
         self.outcome_name = outcome_name
         self.payoffs = payoffs
 
-    def add_adjacent (self, children ):
+    # provate function, should not be called from outside
+    def __add_children__ (self, children ):
         self.children = children
 
     def __str__(self):
@@ -76,14 +77,17 @@ class Player(object):
         self.personal_nodes = personal_nodes
         self.name = name
 
+
+
+    # private function
+    def __build_strategy_sequence__(self):
         if len(self.personal_nodes) > 0:
-            cartesian_product_actions = list(self.personal_nodes[0].action_names)
+            cartesian_product_actions = list(self.personal_nodes[0].children)
             for idx in range(1, len(self.personal_nodes)):
-                cartesian_product_actions = list(product(cartesian_product_actions, self.personal_nodes[idx].action_names))
+                cartesian_product_actions = list(product(cartesian_product_actions, self.personal_nodes[idx].children))
 
             self.strategy_sequences = tuple(cartesian_product_actions)
         print("Strategy_sequence : " , self.strategy_sequences)
-
 
     def __str__(self):
         personal_nodes_print = "\n( \n"
@@ -98,12 +102,18 @@ class EfgGame(object):
     game_comment = ""
     prefix_traversal = ()
     players = ()
+    root = None
 
     def __init__(self,game_name, game_comment, players, prefix_traversal) :
         self.game_name = game_name
         self.players = players
         self.game_comment = game_comment
         self.prefix_traversal = prefix_traversal
+
+        self.build_tree( 0 )
+        root = prefix_traversal[0]
+        for player in self.players:
+            player.__build_strategy_sequence__()
 
     # can only be called from inside, a private function
     def build_tree(self, index):
@@ -112,15 +122,16 @@ class EfgGame(object):
             return index + 1
 
 
-        children = {}
+        children = []
         last_index = index + 1
-        for idx in range(0,len(node.action_moves) ):
-            children.append(node.action_moves[idx], self.prefix_traversal(last_index))
+        for idx in range(0,len(node.action_names) ):
+            children.append((node.action_names[idx], self.prefix_traversal[last_index]))
             new_index = self.build_tree(last_index)
             last_index = new_index
 
-        node.AddAdjacent( children )
-        return last_index + 1
+        node.__add_children__( tuple(children) )
+        #print("For node {}{}, children are {}".format(node.node_name,node.info_num, children))
+        return last_index
 
 
     def __str__(self):
@@ -209,7 +220,7 @@ class EfgGameParser(object):
                     outcome = int(outcome)
                     payoffs = tuple(map(float, payoffs.replace(',', ' ').split()))
                     terminal_node = Terminal_node( node_name, outcome, outcome_name, payoffs )
-                    print(type(terminal_node))
+                    #print(type(terminal_node))
                     prefix_traversal.append(terminal_node)
                     continue
 

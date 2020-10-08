@@ -32,6 +32,7 @@ class NfgGameParser(object):
 
     WRONG_PAYOFF_VALUES_FORMAT = "\npayoff values format doesn't seem to be right, kindly check"
 
+
     # return game dictionary keys and the value types
     # string
     GAME_NAME = "game_name"
@@ -46,10 +47,10 @@ class NfgGameParser(object):
     GAME_COMMENT = "game_comment"
 
     # N-d Array, payoff[0][2][1][3] means
-    # player-1 using 0th strategy
-    # player-2 using 2nd strategy
-    # player-3 using 1st strategy
-    # player-4 using 3rd strategy
+    # player-1 using 3rd strategy
+    # player-2 using 1st strategy
+    # player-3 using 2nd strategy
+    # player-4 using 1st strategy
     PAY_OFF_VALUES = "pay_off_values"
 
     @classmethod
@@ -98,7 +99,7 @@ class NfgGameParser(object):
             except ValueError:
                 InvalidFileException(cls.NON_POSITIVE_INTEGER_STRATEGY_VALUES)
 
-            no_of_strategies.append(int(count))
+            no_of_strategies.append(count)
             total_combinations *= count
 
         # check the count of strategies against no of players and no of strategies
@@ -126,7 +127,7 @@ class NfgGameParser(object):
         # we will use a list of lists to intialise the N-d Array
         # for getting this list of lists, we need to extract data with respect to different dimensions
         last_list = payoff_values
-        for dimension in reversed(no_of_strategies[1:]):
+        for dimension in no_of_strategies[0:len(no_of_strategies)-1]:
             new_list = []
             for i in range(0,len(last_list), dimension):
                 l = last_list[i:i+dimension]
@@ -136,7 +137,7 @@ class NfgGameParser(object):
 
         # n-d array declaration
         payoff_values = np.array(last_list)
-
+        #print(payoff_values[3][0][2])
         # create tuples so that it can't be modified later
         no_of_strategies = tuple(no_of_strategies)
         players = tuple(players)

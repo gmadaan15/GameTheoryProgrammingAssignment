@@ -2,6 +2,12 @@ import re
 from NFGGameParser import InvalidFileException
 from itertools import product
 
+def cartesian_product(pools):
+  result = [[]]
+  for pool in pools:
+    result = [x+[y] for x in result for y in pool]
+  return result
+
 # personal node class and attributes
 class Personal_node(object):
     node_name = ""
@@ -13,6 +19,8 @@ class Personal_node(object):
     outcome_name= ""
     payoffs = tuple()
     children = ()
+    # choosen action that gives the best payoff for the subtree
+    best_actions = []
 
     # constructor
     def __init__(self,node_name, owner_player, info_num, info_name, action_names, outcome, outcome_name, payoffs):
@@ -27,8 +35,15 @@ class Personal_node(object):
 
     # provate function, should not be called from outside
     # this should be called while parsing and not while using
+    # will be known when full game is intialised
     def __add_children__ (self, children ):
         self.children = children
+
+    # private function, will be set when the full game is intialised
+    def __set_best_actions__ (self, actions):
+        self.best_actions = actions
+
+        #print( self.owner_player , self.info_num, actions )
 
     # to print the full info with children
     def __str__(self):
@@ -88,6 +103,7 @@ class Player(object):
     name = ""
     strategy_sequences = tuple()
     personal_nodes = ()
+    spne_strategies = []
 
 
     def __init__(self, name, info_sets):
@@ -114,6 +130,15 @@ class Player(object):
             self.strategy_sequences = tuple(cartesian_product_actions)
         #print("Strategy_sequence : " , self.strategy_sequences)
 
+    def __set_psne_strategy__(self):
+        if len(self.personal_nodes) > 0:
+            best_actions_list = []
+            for idx in range(0, len(self.personal_nodes)):
+                best_actions_list.append( self.personal_nodes[idx].best_actions )
+
+
+            self.spne_strategies = cartesian_product(best_actions_list)
+
     def __str__(self):
         personal_nodes_print = "\n( \n"
         for node in self.personal_nodes:
@@ -138,9 +163,15 @@ class EfgGame(object):
 
         # lets connect all the nodes, once these things are ready
         self.build_tree( 0 )
-        root = prefix_traversal[0]
+        self.root = prefix_traversal[0]
+        # set best actions for all nodes and find psne for each player
+        self.__set_best_action_for_nodes__(0)
         for player in self.players:
             player.__build_strategy_sequence__()
+            player.__set_psne_strategy__()
+
+
+
 
     # can only be called from inside, a private function
     # given the prefix list, build the tree that is assign the children to their respective nodes
@@ -161,7 +192,49 @@ class EfgGame(object):
         #print("For node {}{}, children are {}".format(node.node_name,node.info_num, children))
         return last_index
 
+    # for every node set their best nodes, later each player can find its psne
+    def __set_best_action_for_nodes__(self, index):
+        node = self.prefix_traversal[index]
+        if isinstance(node, Terminal_node):
+            return node.payoffs, index+1
 
+        best_payoffs = [float('-inf')]*len(self.players)
+        best_actions = []
+        last_index = index + 1
+
+        #print("Start : " , node.owner_player, node.info_num)
+        for idx in range(0, len(node.action_names)):
+            payoffs , new_index = self.__set_best_action_for_nodes__( last_index )
+
+            # payoff is selected accroding to the player
+            owner_player = node.owner_player
+            payoff = payoffs[owner_player-1]
+            best_payoff = best_payoffs[owner_player-1]
+
+            # for finding the next child
+            last_index = new_index
+
+            # update best child if its the best
+            if payoff > best_payoff:
+                best_payoffs = payoffs
+                best_actions = [node.action_names[idx]]
+            elif payoff == best_payoff:
+                best_actions.append(node.action_names[idx])
+
+        #print( owner_player, node.info_num, best_payoffs, best_actions )
+
+        node.__set_best_actions__(best_actions)
+
+        return best_payoffs, last_index
+
+    # psne
+    def compute_spnes(self):
+        spnes_list = []
+        for player in self.players:
+            spnes_list.append(player.spne_strategies)
+        #print(spnes_list)
+        spnes = cartesian_product(spnes_list)
+        return spnes
     def __str__(self):
         players_print = "\n( \n"
         for player in self.players:

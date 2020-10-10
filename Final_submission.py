@@ -448,7 +448,8 @@ class EfgGameParser(object):
         #print(file_lines)
 
         # lets match for the first line
-        match_obj = re.match('EFG\s+2\s+R\s+"(.*?)"\s+{(.*?)}(?:\s+"(.*?)")?', ' '.join(file_lines))
+        entire_file = ' '.join(file_lines)
+        match_obj = re.match('EFG\s+2\s+R\s+"(.*?)"\s+{(.*?)}(?:\s+"(.*?)")?', entire_file)
 
         if match_obj is None:
             raise InvalidFileException( cls.EXTREME_VERSIONS_MESSAGE )
@@ -463,8 +464,11 @@ class EfgGameParser(object):
             players_info_sets.append([])
 
         # will pass through all the nodes and categorise them.
-        for index in range( 1, len(file_lines) ):
-            line = file_lines[index].rstrip("\n")
+        file_lines = entire_file[match_obj.end():].split('\n')
+        for index in range( len(file_lines) ):
+            line = file_lines[index].rstrip("\n").strip()
+            if not line:
+                continue
 
             # not considering chance nodes in the file, if given, an error will be raised
             '''

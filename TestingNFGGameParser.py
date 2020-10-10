@@ -105,7 +105,7 @@ def find_psne(file_name):
 
 
 
-for count in range(3,4):
+for count in range(5,6):
     file_name = "NfgTestCases/test_case_" + str(count)
 
     try:

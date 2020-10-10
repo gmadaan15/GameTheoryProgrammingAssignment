@@ -9,6 +9,7 @@ from EFGGameParser import *
 def Q4(filename):
     # to format the payoff value for every strategy set
     def payoff_formator(elm):
+        # return ' '.join(map(lambda x: str(int(x)), elm))      # use this return statement to print payoff values as int
         return ' '.join(map(str, elm))
 
     # to format the game representation
@@ -62,6 +63,8 @@ def Q4(filename):
     with np.nditer(N, flags=['multi_index', 'refs_ok'], op_flags=['writeonly']) as it:
         for elm in it:
             elm[...] = payoff_formator(find_payoff(it.multi_index))
+    # import pprint
+    # pprint.pprint(N)                                          # uncomment this to print payoff values as nD array
     return nfg_formator(game.game_name, players_name, n_dims, N.reshape(-1, order='F').tolist())
 
 

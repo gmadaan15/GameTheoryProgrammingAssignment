@@ -6,7 +6,7 @@ import os.path
 import itertools
 
 
-''' 
+'''
 Questions are after these classes and helper functions
 
 # test files that we used, kindly make sure that you test it with these formats,
@@ -17,7 +17,7 @@ If you face any InvalidFileException, kindly let us know. We are very sure that 
 NFG 1 R "Test Case 3 : three player game"
 { "Player 1" "Player 2", "Player 3" } { 3 3 2 }
  2 0 4 3 2 3 1 0 2 1 1 1 0 1 0 0 0 3 1 2 3 2 1 0 3 1 1 2 0 3 1 3 2 0 0 0 4 1 2 2 2 2 3 0 3 1 1 2 0 4 3 2 1 0
- 
+
 *********** EFG file *************
 EFG 2 R "Untitled Extensive Game" { "Player 1" "Player 2" }
 ""
@@ -448,7 +448,7 @@ class EfgGameParser(object):
         #print(file_lines)
 
         # lets match for the first line
-        match_obj = re.match('EFG +2 +R +"(.*?)" +{(.*?)}(?: +"(.*?)")?', file_lines[0].rstrip("\n"))
+        match_obj = re.match('EFG\s+2\s+R\s+"(.*?)"\s+{(.*?)}(?:\s+"(.*?)")?', ' '.join(file_lines))
 
         if match_obj is None:
             raise InvalidFileException( cls.EXTREME_VERSIONS_MESSAGE )
@@ -463,7 +463,7 @@ class EfgGameParser(object):
             players_info_sets.append([])
 
         # will pass through all the nodes and categorise them.
-        for index in range( 2, len(file_lines) ):
+        for index in range( 1, len(file_lines) ):
             line = file_lines[index].rstrip("\n")
 
             # not considering chance nodes in the file, if given, an error will be raised
